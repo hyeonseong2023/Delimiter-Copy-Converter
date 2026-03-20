@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "공백→탭 변환기",
+  "short_name": "공백탭변환",
+  "version": "1.0.1",
+  "description": "클립보드 텍스트 구분자를 변환해 다시 복사합니다. (기본: 공백→탭)",
+  "permissions": ["clipboardRead", "clipboardWrite"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "구분자 변환 복사",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  }
+}

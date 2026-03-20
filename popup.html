@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>공백 → 탭 변환 복사</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 10px 12px;
+      min-width: max-content;
+      background: #f5f7fb;
+    }
+    #controlsRow {
+      display: flex;
+      align-items: stretch;
+      gap: 6px;
+    }
+    #controlsRow[hidden] {
+      display: none !important;
+    }
+    #delimiterOptions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding-top: 1px;
+    }
+    #delimiterOptions[hidden] {
+      display: none !important;
+    }
+    .delimiter-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 0 0 auto;
+    }
+    .delimiter-select {
+      width: 80px;
+      min-width: 80px;
+      height: 34px;
+      box-sizing: border-box;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      padding: 0 24px 0 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid #aeb8c8;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' fill='none' stroke='%2364748b' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: calc(100% - 12px) 50%;
+      background-size: 10px 7px;
+      color: #0f172a;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .custom-delimiter-input {
+      width: 29px;
+      height: 34px;
+      box-sizing: border-box;
+      padding: 0 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid #aeb8c8;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      color: #0f172a;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      text-align: center;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .delimiter-select:hover {
+      border-color: #99a7bb;
+    }
+    .custom-delimiter-input:hover {
+      border-color: #99a7bb;
+      background: linear-gradient(180deg, #ffffff 0%, #f3f7fc 100%);
+    }
+    .delimiter-select:focus,
+    .delimiter-select:focus-visible,
+    .custom-delimiter-input:focus,
+    .custom-delimiter-input:focus-visible {
+      outline: none;
+      box-shadow: none;
+      border-color: #aeb8c8;
+    }
+    .custom-delimiter-input[hidden] {
+      display: none !important;
+    }
+    #delimiterArrow {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 30px;
+      height: 34px;
+      color: #16a34a;
+      line-height: 1;
+    }
+    .arrow-icon {
+      width: 18px;
+      height: 18px;
+      display: block;
+      filter: drop-shadow(0 1px 0 rgba(22, 163, 74, 0.25));
+    }
+    #convertButton {
+      display: block;
+      flex: 0 0 auto;
+      width: 200px;
+      min-width: 200px;
+      margin: 0;
+      padding: 8px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 6px;
+      border: none;
+      background: linear-gradient(135deg, #107c41, #21a366);
+      color: #e5f9ef;
+      font-weight: 500;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+      transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+      text-align: center;
+    }
+    #toggleOptionsButton {
+      display: block;
+      flex: 0 0 auto;
+      width: 64px;
+      min-width: 64px;
+      height: 34px;
+      padding: 0 28px 0 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 1px solid #aeb8c8;
+      background: linear-gradient(180deg, #ffffff 0%, #f2f6fb 100%);
+      color: #0f172a;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    }
+    #toggleOptionsButton::after {
+      content: "";
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      width: 10px;
+      height: 7px;
+      transform: translateY(-50%);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' fill='none' stroke='%2364748b' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-size: 10px 7px;
+      background-position: center;
+    }
+    #toggleOptionsButton[aria-expanded="true"]::after {
+      transform: translateY(-50%) rotate(180deg);
+    }
+    #toggleOptionsButton:hover {
+      border-color: #99a7bb;
+      background: linear-gradient(180deg, #ffffff 0%, #e9eef6 100%);
+    }
+    #toggleOptionsButton:active {
+      transform: translateY(0.5px);
+    }
+    #toggleOptionsButton:focus,
+    #toggleOptionsButton:focus-visible {
+      outline: none;
+    }
+    #convertButton:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+      box-shadow: none;
+      transform: none;
+    }
+    #convertButton:hover {
+      background: linear-gradient(135deg, #0f6c3a, #1e8a57);
+      box-shadow: 0 2px 5px rgba(15, 23, 42, 0.25);
+      transform: translateY(-1px);
+    }
+    #convertButton:disabled:hover {
+      background: linear-gradient(135deg, #107c41, #21a366);
+      box-shadow: none;
+      transform: none;
+    }
+    #convertButton:active {
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.2);
+      transform: translateY(0);
+    }
+    .field-input {
+      display: block;
+      flex: 0 0 auto;
+      width: auto;
+      min-width: 24px;
+      max-width: 100px;
+      box-sizing: border-box;
+      font-size: 12px;
+      padding: 4px 6px;
+      border-radius: 0;
+      border: 1px solid #c7ced9;
+      background: #ffffff;
+      color: #111827;
+    }
+    .field-input + .field-input {
+      border-left: 0;
+    }
+    .field-input:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 1px;
+      border-color: #2563eb;
+    }
+    #resultContainer {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 0;
+      overflow-x: auto;
+      padding-bottom: 0;
+    }
+    #resultContainer[hidden] {
+      display: none !important;
+    }
+    #resultContainer:not([hidden]) {
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div id="controlsRow">
+    <button id="toggleOptionsButton" type="button" aria-expanded="false">옵션</button>
+    <button id="convertButton">변환 후 복사</button>
+  </div>
+
+  <div id="delimiterOptions" hidden>
+    <div class="delimiter-group">
+      <select id="sourceDelimiter" class="delimiter-select" aria-label="입력 구분자">
+        <option value="tab">탭</option>
+        <option value="semicolon">세미콜론</option>
+        <option value="space" selected>공백</option>
+        <option value="comma">콤마</option>
+        <option value="custom">기타</option>
+      </select>
+      <input id="sourceCustomDelimiter" class="custom-delimiter-input" type="text" maxlength="1" hidden />
+    </div>
+
+    <span id="delimiterArrow" aria-hidden="true">
+      <svg class="arrow-icon" viewBox="0 0 24 24" fill="none">
+        <path d="M4 12h13m0 0-4-4m4 4-4 4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </span>
+
+    <div class="delimiter-group">
+      <select id="targetDelimiter" class="delimiter-select" aria-label="출력 구분자">
+        <option value="tab" selected>탭</option>
+        <option value="semicolon">세미콜론</option>
+        <option value="space">공백</option>
+        <option value="comma">콤마</option>
+        <option value="remove">제거</option>
+        <option value="custom">기타</option>
+      </select>
+      <input id="targetCustomDelimiter" class="custom-delimiter-input" type="text" maxlength="1" hidden />
+    </div>
+  </div>
+
+  <div id="resultContainer" hidden></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
