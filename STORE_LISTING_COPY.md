@@ -2,7 +2,7 @@
 구분자 변환 복사기
 
 지원 이메일
-example@example.com
+528528abcd@gmail.com
 
 개인정보처리방침 URL
 https://hyeonseong2023.github.io/Delimiter-Copy-Converter/privacy-policy.html
