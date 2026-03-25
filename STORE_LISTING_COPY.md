@@ -5,7 +5,7 @@
 example@example.com
 
 개인정보처리방침 URL
-https://<여기에-공개-URL-입력>
+https://hyeonseong2023.github.io/Delimiter-Copy-Converter/privacy-policy.html
 
 Chrome Web Store - Short description
 클립보드 텍스트 구분자를 원하는 형식으로 빠르게 변환해 다시 복사하는 생산성 확장 프로그램입니다.
