@@ -4,12 +4,24 @@
   <meta charset="UTF-8" />
   <title>구분자 변환 복사기</title>
   <style>
+    @font-face {
+      font-family: "Pretendard Variable";
+      src: url("./fonts/PretendardVariable.woff2") format("woff2-variations");
+      font-style: normal;
+      font-weight: 45 920;
+      font-display: swap;
+    }
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
       margin: 0;
       padding: 10px 12px;
       min-width: max-content;
       background: #f5f7fb;
+    }
+    button,
+    select,
+    input {
+      font-family: inherit;
     }
     #controlsRow {
       display: flex;
@@ -35,9 +47,15 @@
       gap: 4px;
       flex: 0 0 auto;
     }
-    .delimiter-select {
+    .delimiter-select-wrap {
+      position: relative;
+      flex: 0 0 auto;
       width: 80px;
       min-width: 80px;
+    }
+    .delimiter-select {
+      width: 100%;
+      min-width: 0;
       height: 34px;
       box-sizing: border-box;
       -webkit-appearance: none;
@@ -46,16 +64,35 @@
       padding: 0 24px 0 8px;
       font-size: 12px;
       font-weight: 600;
+      cursor: pointer;
       border: 1px solid #aeb8c8;
       border-radius: 8px;
       background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' fill='none' stroke='%2364748b' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: calc(100% - 12px) 50%;
-      background-size: 10px 7px;
       color: #0f172a;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
       transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .delimiter-select-arrow {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      width: 10px;
+      height: 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      pointer-events: none;
+      transform: translateY(-50%);
+      transition: transform 0.18s ease;
+    }
+    .delimiter-select:open + .delimiter-select-arrow {
+      transform: translateY(-50%) rotate(180deg);
+    }
+    .delimiter-select-arrow svg {
+      display: block;
+      width: 10px;
+      height: 7px;
     }
     .custom-delimiter-input {
       width: 29px;
@@ -121,7 +158,7 @@
       color: #e5f9ef;
       font-weight: 500;
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
-      transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+      transition: background 0.15s ease, box-shadow 0.15s ease;
       text-align: center;
     }
     #toggleOptionsButton {
@@ -139,7 +176,7 @@
       color: #0f172a;
       cursor: pointer;
       position: relative;
-      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+      transition: background 0.15s ease, border-color 0.15s ease;
     }
     #toggleOptionsButton::after {
       content: "";
@@ -153,6 +190,7 @@
       background-repeat: no-repeat;
       background-size: 10px 7px;
       background-position: center;
+      transition: transform 0.18s ease;
     }
     #toggleOptionsButton[aria-expanded="true"]::after {
       transform: translateY(-50%) rotate(180deg);
@@ -160,9 +198,6 @@
     #toggleOptionsButton:hover {
       border-color: #99a7bb;
       background: linear-gradient(180deg, #ffffff 0%, #e9eef6 100%);
-    }
-    #toggleOptionsButton:active {
-      transform: translateY(0.5px);
     }
     #toggleOptionsButton:focus,
     #toggleOptionsButton:focus-visible {
@@ -172,21 +207,17 @@
       cursor: not-allowed;
       opacity: 0.5;
       box-shadow: none;
-      transform: none;
     }
     #convertButton:hover {
       background: linear-gradient(135deg, #0f6c3a, #1e8a57);
       box-shadow: 0 2px 5px rgba(15, 23, 42, 0.25);
-      transform: translateY(-1px);
     }
     #convertButton:disabled:hover {
       background: linear-gradient(135deg, #107c41, #21a366);
       box-shadow: none;
-      transform: none;
     }
     #convertButton:active {
       box-shadow: 0 1px 2px rgba(15, 23, 42, 0.2);
-      transform: translateY(0);
     }
     .field-input {
       display: block;
@@ -233,13 +264,20 @@
 
   <div id="delimiterOptions" hidden>
     <div class="delimiter-group">
-      <select id="sourceDelimiter" class="delimiter-select" aria-label="입력 구분자">
-        <option value="tab">탭</option>
-        <option value="semicolon">세미콜론</option>
-        <option value="space" selected>공백</option>
-        <option value="comma">콤마</option>
-        <option value="custom">기타</option>
-      </select>
+      <div class="delimiter-select-wrap">
+        <select id="sourceDelimiter" class="delimiter-select" aria-label="입력 구분자">
+          <option value="tab">탭</option>
+          <option value="semicolon">세미콜론</option>
+          <option value="space" selected>공백</option>
+          <option value="comma">콤마</option>
+          <option value="custom">기타</option>
+        </select>
+        <span class="delimiter-select-arrow" aria-hidden="true">
+          <svg viewBox="0 0 12 8" fill="none">
+            <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </span>
+      </div>
       <input id="sourceCustomDelimiter" class="custom-delimiter-input" type="text" maxlength="1" hidden />
     </div>
 
@@ -250,14 +288,21 @@
     </span>
 
     <div class="delimiter-group">
-      <select id="targetDelimiter" class="delimiter-select" aria-label="출력 구분자">
-        <option value="tab" selected>탭</option>
-        <option value="semicolon">세미콜론</option>
-        <option value="space">공백</option>
-        <option value="comma">콤마</option>
-        <option value="remove">제거</option>
-        <option value="custom">기타</option>
-      </select>
+      <div class="delimiter-select-wrap">
+        <select id="targetDelimiter" class="delimiter-select" aria-label="출력 구분자">
+          <option value="tab" selected>탭</option>
+          <option value="semicolon">세미콜론</option>
+          <option value="space">공백</option>
+          <option value="comma">콤마</option>
+          <option value="remove">제거</option>
+          <option value="custom">기타</option>
+        </select>
+        <span class="delimiter-select-arrow" aria-hidden="true">
+          <svg viewBox="0 0 12 8" fill="none">
+            <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </span>
+      </div>
       <input id="targetCustomDelimiter" class="custom-delimiter-input" type="text" maxlength="1" hidden />
     </div>
   </div>

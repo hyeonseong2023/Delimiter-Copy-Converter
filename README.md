@@ -18,7 +18,9 @@
 - `manifest.json`: 확장 프로그램 메타데이터/권한
 - `popup.html`: 팝업 UI
 - `popup.js`: 변환 로직/상태 관리
+- `fonts/`: 로컬 Pretendard 폰트 번들
 - `icons/`: 확장 아이콘
+- `screenshots/store/`: 스토어 이미지 산출물
 - `dist/`: 배포 ZIP 산출물
 - `STORE_SUBMISSION.md`: 제출 체크리스트
 - `STORE_LISTING_COPY.md`: 스토어 입력 텍스트
@@ -40,10 +42,15 @@
 ## 배포 ZIP 생성
 프로젝트 루트에서:
 
-```bash
-zip -q -r dist/delimiter-copy-converter-v1.0.1.zip \
-  manifest.json popup.html popup.js \
-  icons/icon16.png icons/icon32.png icons/icon48.png icons/icon128.png
+```powershell
+if (Test-Path "dist/delimiter-copy-converter-v1.0.1.zip") {
+  Remove-Item "dist/delimiter-copy-converter-v1.0.1.zip"
+}
+
+Compress-Archive -Path `
+  manifest.json, popup.html, popup.js, icons, fonts `
+  -DestinationPath dist/delimiter-copy-converter-v1.0.1.zip `
+  -CompressionLevel Optimal
 ```
 
 ## 스토어 이미지 촬영 목록
@@ -63,6 +70,38 @@ zip -q -r dist/delimiter-copy-converter-v1.0.1.zip \
 
 5. `05-disabled-state.png`
 검증 상태. 입력/출력 동일 또는 기타 미입력 시 버튼 비활성화 장면.
+
+## 스크린샷 미리보기
+
+<table>
+  <tr>
+    <td width="50%"><img src="screenshots/store/01-main-default.png" alt="기본 화면" width="100%"></td>
+    <td width="50%"><img src="screenshots/store/02-options-open.png" alt="옵션 설정" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>기본 화면</strong></td>
+    <td align="center"><strong>옵션 설정</strong></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="screenshots/store/03-usecase-tab-cells.png" alt="탭 출력 미리보기" width="100%"></td>
+    <td width="50%"><img src="screenshots/store/04-usecase-remove-single.png" alt="제거 출력 미리보기" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>탭 출력 미리보기</strong></td>
+    <td align="center"><strong>제거 출력 미리보기</strong></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="screenshots/store/05-disabled-state.png" alt="비활성화 검증" width="100%"></td>
+    <td width="50%"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>비활성화 검증</strong></td>
+    <td></td>
+  </tr>
+</table>
+
+## 아이콘
+- 현재 배포 아이콘은 `icons/icon16.png`, `icons/icon32.png`, `icons/icon48.png`, `icons/icon128.png`를 사용합니다.
 
 ## 스토어 제출 시 참고
 - 업로드 파일: `dist/delimiter-copy-converter-v1.0.1.zip`

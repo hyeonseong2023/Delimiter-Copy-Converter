@@ -20,17 +20,28 @@
 - 옵션 저장: 사용자가 고른 입력/출력 구분자 및 기타 1자 값을 기기 로컬에 저장 후 다음 실행 시 복원
 
 ## 2. 제출 전 파일 압축
-아래 파일만 포함해서 zip을 만드세요.
+아래 런타임 파일/폴더만 포함해서 zip을 만드세요.
 - `manifest.json`
 - `popup.html`
 - `popup.js`
-- `icons/icon16.png`
-- `icons/icon32.png`
-- `icons/icon48.png`
-- `icons/icon128.png`
+- `icons/`
+- `fonts/`
 
 권장(스토어 심사 참고용):
 - `PRIVACY_POLICY.md`
+
+PowerShell 예시:
+
+```powershell
+if (Test-Path "dist/delimiter-copy-converter-v1.0.1.zip") {
+  Remove-Item "dist/delimiter-copy-converter-v1.0.1.zip"
+}
+
+Compress-Archive -Path `
+  manifest.json, popup.html, popup.js, icons, fonts `
+  -DestinationPath dist/delimiter-copy-converter-v1.0.1.zip `
+  -CompressionLevel Optimal
+```
 
 ## 3. 스토어 입력용 문구 (권한 정당화)
 ### Short description

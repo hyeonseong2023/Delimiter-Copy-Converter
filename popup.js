@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const elements = {
     button: document.getElementById('convertButton'),
+    controlsRow: document.getElementById('controlsRow'),
     toggleOptionsButton: document.getElementById('toggleOptionsButton'),
     delimiterOptions: document.getElementById('delimiterOptions'),
     resultContainer: document.getElementById('resultContainer'),
@@ -25,6 +26,20 @@ document.addEventListener('DOMContentLoaded', () => {
     sourceCustomDelimiter: document.getElementById('sourceCustomDelimiter'),
     targetCustomDelimiter: document.getElementById('targetCustomDelimiter')
   };
+  const delimiterPairs = [
+    {
+      select: elements.sourceDelimiter,
+      input: elements.sourceCustomDelimiter,
+      selectKey: 'sourceDelimiter',
+      inputKey: 'sourceCustomDelimiter'
+    },
+    {
+      select: elements.targetDelimiter,
+      input: elements.targetCustomDelimiter,
+      selectKey: 'targetDelimiter',
+      inputKey: 'targetCustomDelimiter'
+    }
+  ];
 
   const widthCanvas = document.createElement('canvas');
   const widthContext = widthCanvas.getContext('2d');
@@ -49,54 +64,57 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Creates the storage payload from the current form controls.
+  function getDelimiterSettings() {
+    return delimiterPairs.reduce((settings, pair) => {
+      settings[pair.selectKey] = pair.select.value;
+      settings[pair.inputKey] = pair.input.value;
+      return settings;
+    }, {});
+  }
+
   // Persists current delimiter selections and custom characters.
   function saveDelimiterSettings() {
-    const settings = {
-      sourceDelimiter: elements.sourceDelimiter.value,
-      targetDelimiter: elements.targetDelimiter.value,
-      sourceCustomDelimiter: elements.sourceCustomDelimiter.value,
-      targetCustomDelimiter: elements.targetCustomDelimiter.value
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(getDelimiterSettings()));
   }
 
   // Applies stored settings to UI controls when values are valid.
   function applyDelimiterSettings(settings) {
     if (!settings) return;
 
-    if (isValidDelimiterValue(settings.sourceDelimiter)) {
-      elements.sourceDelimiter.value = settings.sourceDelimiter;
-    }
-    if (isValidDelimiterValue(settings.targetDelimiter)) {
-      elements.targetDelimiter.value = settings.targetDelimiter;
-    }
+    delimiterPairs.forEach((pair) => {
+      const storedSelectValue = settings[pair.selectKey];
+      const storedInputValue = settings[pair.inputKey];
 
-    if (typeof settings.sourceCustomDelimiter === 'string') {
-      elements.sourceCustomDelimiter.value = settings.sourceCustomDelimiter;
-    }
-    if (typeof settings.targetCustomDelimiter === 'string') {
-      elements.targetCustomDelimiter.value = settings.targetCustomDelimiter;
-    }
+      if (isValidDelimiterValue(storedSelectValue)) {
+        pair.select.value = storedSelectValue;
+      }
+      if (typeof storedInputValue === 'string') {
+        pair.input.value = storedInputValue;
+      }
 
-    limitToOneCharacter(elements.sourceCustomDelimiter);
-    limitToOneCharacter(elements.targetCustomDelimiter);
+      limitToOneCharacter(pair.input);
+    });
   }
 
   // Shows or hides the options panel and updates button expanded state.
   function setDelimiterOptionsVisible(visible) {
+    // Clears legacy accessibility attributes from older popup builds before toggling.
+    elements.controlsRow.hidden = false;
+    elements.controlsRow.removeAttribute('aria-hidden');
+    elements.controlsRow.removeAttribute('inert');
     elements.delimiterOptions.hidden = !visible;
     elements.toggleOptionsButton.setAttribute('aria-expanded', String(visible));
   }
 
   // Toggles custom delimiter input visibility for a select control.
-  function toggleCustomInput(selectEl, inputEl) {
-    inputEl.hidden = selectEl.value !== 'custom';
+  function toggleCustomInput(pair) {
+    pair.input.hidden = pair.select.value !== 'custom';
   }
 
   // Syncs both custom delimiter input visibility states.
   function toggleAllCustomInputs() {
-    toggleCustomInput(elements.sourceDelimiter, elements.sourceCustomDelimiter);
-    toggleCustomInput(elements.targetDelimiter, elements.targetCustomDelimiter);
+    delimiterPairs.forEach(toggleCustomInput);
   }
 
   // Restricts custom delimiter input to a single Unicode character.
@@ -108,32 +126,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Converts a selected delimiter option into its runtime string value.
-  function getDelimiter(selectEl, inputEl) {
-    return DELIMITER_BY_VALUE[selectEl.value] ?? inputEl.value;
+  function getDelimiter(pair) {
+    return DELIMITER_BY_VALUE[pair.select.value] ?? pair.input.value;
   }
 
   // Returns true when custom delimiter is selected but no value is provided.
-  function isCustomInputMissing(selectEl, inputEl) {
-    return selectEl.value === 'custom' && inputEl.value === '';
+  function isCustomInputMissing(pair) {
+    return pair.select.value === 'custom' && pair.input.value === '';
   }
 
   // Checks whether source and target delimiters resolve to the same value.
   function areDelimitersEqual() {
-    if (isCustomInputMissing(elements.sourceDelimiter, elements.sourceCustomDelimiter)) return false;
-    if (isCustomInputMissing(elements.targetDelimiter, elements.targetCustomDelimiter)) return false;
-
-    return (
-      getDelimiter(elements.sourceDelimiter, elements.sourceCustomDelimiter) ===
-      getDelimiter(elements.targetDelimiter, elements.targetCustomDelimiter)
-    );
+    const [sourcePair, targetPair] = delimiterPairs;
+    if (isCustomInputMissing(sourcePair) || isCustomInputMissing(targetPair)) return false;
+    return getDelimiter(sourcePair) === getDelimiter(targetPair);
   }
 
   // Updates convert button disabled state based on current validation rules.
   function updateConvertButtonState() {
-    elements.button.disabled =
-      isCustomInputMissing(elements.sourceDelimiter, elements.sourceCustomDelimiter) ||
-      isCustomInputMissing(elements.targetDelimiter, elements.targetCustomDelimiter) ||
-      areDelimitersEqual();
+    const hasMissingCustomInput = delimiterPairs.some(isCustomInputMissing);
+    elements.button.disabled = hasMissingCustomInput || areDelimitersEqual();
   }
 
   // Splits input text by selected delimiter, with whitespace-normalized space mode.
@@ -200,9 +212,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const source = getDelimiter(elements.sourceDelimiter, elements.sourceCustomDelimiter);
-      const target = getDelimiter(elements.targetDelimiter, elements.targetCustomDelimiter);
-      const parts = splitByDelimiter(text, elements.sourceDelimiter.value, source);
+      const [sourcePair, targetPair] = delimiterPairs;
+      const source = getDelimiter(sourcePair);
+      const target = getDelimiter(targetPair);
+      const parts = splitByDelimiter(text, sourcePair.select.value, source);
 
       if (parts.length === 0) {
         clearResult();
@@ -222,42 +235,46 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Handles source/target select changes including focus and persistence.
-  function handleDelimiterSelectChange(selectEl, inputEl) {
-    toggleCustomInput(selectEl, inputEl);
+  function handleDelimiterSelectChange(pair) {
+    toggleCustomInput(pair);
     updateConvertButtonState();
     saveDelimiterSettings();
-    if (selectEl.value === 'custom') {
-      inputEl.focus();
+    if (pair.select.value === 'custom') {
+      pair.input.focus();
     }
   }
 
   // Handles custom delimiter input updates and persistence.
-  function handleCustomDelimiterInput(inputEl) {
-    limitToOneCharacter(inputEl);
+  function handleCustomDelimiterInput(pair) {
+    limitToOneCharacter(pair.input);
     updateConvertButtonState();
     saveDelimiterSettings();
   }
 
-  elements.sourceDelimiter.addEventListener('change', () => {
-    handleDelimiterSelectChange(elements.sourceDelimiter, elements.sourceCustomDelimiter);
-  });
-  elements.targetDelimiter.addEventListener('change', () => {
-    handleDelimiterSelectChange(elements.targetDelimiter, elements.targetCustomDelimiter);
-  });
-  elements.sourceCustomDelimiter.addEventListener('input', () => {
-    handleCustomDelimiterInput(elements.sourceCustomDelimiter);
-  });
-  elements.targetCustomDelimiter.addEventListener('input', () => {
-    handleCustomDelimiterInput(elements.targetCustomDelimiter);
-  });
+  function bindDelimiterInputEvents() {
+    delimiterPairs.forEach((pair) => {
+      pair.select.addEventListener('change', () => {
+        handleDelimiterSelectChange(pair);
+      });
+      pair.input.addEventListener('input', () => {
+        handleCustomDelimiterInput(pair);
+      });
+    });
+  }
 
-  applyDelimiterSettings(loadDelimiterSettings());
-  toggleAllCustomInputs();
-  updateConvertButtonState();
-  saveDelimiterSettings();
-  setDelimiterOptionsVisible(false);
-  elements.toggleOptionsButton.addEventListener('click', () => {
-    setDelimiterOptionsVisible(elements.delimiterOptions.hidden);
-  });
-  elements.button.addEventListener('click', convertClipboard);
+  function initialize() {
+    applyDelimiterSettings(loadDelimiterSettings());
+    toggleAllCustomInputs();
+    updateConvertButtonState();
+    saveDelimiterSettings();
+    setDelimiterOptionsVisible(false);
+    bindDelimiterInputEvents();
+
+    elements.toggleOptionsButton.addEventListener('click', () => {
+      setDelimiterOptionsVisible(elements.delimiterOptions.hidden);
+    });
+    elements.button.addEventListener('click', convertClipboard);
+  }
+
+  initialize();
 });

@@ -1,6 +1,6 @@
 # 스토어 등록 붙여넣기 템플릿 (최종)
 
-최종 기준일: 2026-03-20  
+최종 기준일: 2026-03-25  
 대상: Chrome Web Store / Microsoft Edge Add-ons
 
 ## 1) 공통 기본 정보
@@ -9,7 +9,7 @@
 - 개인정보처리방침 URL: `https://<여기에-공개-URL-입력>`
 
 개인정보처리방침 원문:
-- [PRIVACY_POLICY.md](/Users/hoya/Projects/excel-program/excel-plugin/Delimiter Copy Converter/PRIVACY_POLICY.md)
+- `PRIVACY_POLICY.md`
 
 ## 2) Chrome Web Store 붙여넣기
 ### Short description
@@ -64,6 +64,7 @@
 10. 옵션값 변경 후 팝업을 다시 열면 이전 선택값이 복원됩니다.
 
 ## 4) 제출 전 최종 체크
-- 배포 ZIP: [delimiter-copy-converter-v1.0.1.zip](/Users/hoya/Projects/excel-program/excel-plugin/Delimiter Copy Converter/dist/delimiter-copy-converter-v1.0.1.zip)
+- 배포 ZIP: `dist/delimiter-copy-converter-v1.0.1.zip`
 - 아이콘: `icons/icon16.png`, `icons/icon32.png`, `icons/icon48.png`, `icons/icon128.png`
+- 로컬 폰트 번들: `fonts/PretendardVariable.woff2`, `fonts/Pretendard-OFL.txt`
 - 스크린샷/프로모션 이미지 업로드 완료 여부 확인
